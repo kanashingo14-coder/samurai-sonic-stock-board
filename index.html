@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>SAMURAI SONIC 在庫ボード</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@600;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+<style>
+  :root{
+    --ink-deep:#12143a;
+    --ink-panel:#1c1f56;
+    --ink-panel-2:#33367f;
+    --accent:#7278e0;
+    --accent-soft:#9498ea;
+    --washi:#f6f1e5;
+    --washi-dim:#cfc6ae;
+    --ink-text:#211f39;
+    --ink-soft:#6c6684;
+    --shu:#b23a2b;
+    --shu-soft:#f1ded9;
+    --matsu:#276a49;
+    --matsu-soft:#dfe9df;
+    --gold:#c9973f;
+    --gold-soft:#3a2f16;
+    --focus:#ffd876;
+  }
+
+  *{box-sizing:border-box;}
+  html{background:var(--ink-deep);}
+  body{
+    margin:0;
+    background:var(--ink-deep);
+    color:var(--washi);
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+
+  a{color:inherit;}
+  button{font-family:inherit;}
+  :focus-visible{outline:3px solid var(--focus); outline-offset:2px;}
+
+  .page{max-width:1080px; margin:0 auto; padding:0 0 64px;}
+  body.staff-mode .page{padding-bottom:16px;}
+
+  /* ---------- header ---------- */
+  .topbar{
+    position:relative;
+    padding:22px 20px 26px;
+    background:radial-gradient(140% 100% at 12% 0%, var(--ink-panel-2) 0%, var(--ink-panel) 46%, var(--ink-deep) 100%);
+    overflow:hidden;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .topbar::before{
+    content:"";
+    position:absolute; inset:0;
+    opacity:0.16;
+    pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='48' viewBox='0 0 84 48'%3E%3Cg fill='none' stroke='%23f6f1e5' stroke-width='1'%3E%3Cpath d='M0 40c8-16 20-16 28 0s20 16 28 0 20-16 28 0'/%3E%3Cpath d='M0 24c8-16 20-16 28 0s20 16 28 0 20-16 28 0'/%3E%3Cpath d='M0 8c8-16 20-16 28 0s20 16 28 0 20-16 28 0'/%3E%3C/g%3E%3C/svg%3E");
+    background-size:168px 96px;
+  }
+  body.staff-mode .topbar{padding:10px 16px 12px;}
+  body.staff-mode .topbar::before{opacity:0.08;}
+  .topbar-inner{
+    position:relative;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .brand-eyebrow{font-size:12px; letter-spacing:0.22em; color:var(--accent-soft); font-weight:700; margin:0 0 10px;}
+  body.staff-mode .brand-eyebrow{margin-bottom:2px;}
+  .brand-name{
+    font-family:"Zen Old Mincho",serif;
+    font-weight:900;
+    font-size:clamp(30px,6.5vw,46px);
+    line-height:1.05;
+    margin:0;
+    color:var(--washi);
+    text-wrap:balance;
+  }
+  body.staff-mode .brand-name{font-size:21px;}
+  .brand-sub{margin:10px 0 0; font-size:14px; color:var(--accent-soft);}
+  body.staff-mode .brand-sub{display:none;}
+  .update-line{
+    margin-top:16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:var(--washi-dim);
+    font-variant-numeric:tabular-nums;
+  }
+  body.staff-mode .update-line{margin-top:6px; font-size:11.5px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:#7be3a6;box-shadow:0 0 0 3px rgba(123,227,166,0.2);flex:none;}
+  .dot.offline{background:#cfa63a;box-shadow:0 0 0 3px rgba(207,166,58,0.2);}
+
+  .staff-toggle{
+    display:none;
+    position:relative;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.28);
+    color:var(--washi);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    padding:9px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .staff-toggle:hover{background:rgba(255,255,255,0.16);}
+  body.staff-mode .staff-toggle{display:inline-block;}
+
+  .refresh-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:12px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.28);
+    color:var(--washi);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    padding:7px 14px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .refresh-btn:hover{background:rgba(255,255,255,0.16);}
+  body.staff-mode .refresh-btn{display:none;}
+
+  /* ---------- staff mode banner ---------- */
+  .staff-banner{
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    padding:12px 20px;
+    background:var(--gold-soft);
+    border-bottom:1px solid rgba(201,151,63,0.5);
+    color:var(--gold);
+    font-size:13px;
+  }
+  .staff-banner strong{color:#f0d9a3;}
+  body.staff-mode .staff-banner{display:flex; padding:7px 16px; font-size:12px;}
+  .staff-banner-actions{display:flex; gap:8px; flex-wrap:wrap;}
+  .qr-btn, .signout-btn{
+    background:transparent;
+    border:1px solid var(--gold);
+    color:var(--gold);
+    padding:7px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .qr-btn:hover, .signout-btn:hover{background:rgba(201,151,63,0.15);}
+
+  /* ---------- product grid (customer view) ---------- */
+  .grid{
+    padding:28px 20px 8px;
+    display:grid;
+    gap:18px;
+    grid-template-columns:repeat(auto-fill, minmax(250px,1fr));
+  }
+  .grid-loading, .grid-error{
+    grid-column:1/-1;
+    padding:32px 16px;
+    text-align:center;
+    color:var(--washi-dim);
+    font-size:13.5px;
+  }
+  .grid-error button{
+    margin-top:10px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.28);
+    color:var(--washi);
+    font-size:12px;
+    font-weight:700;
+    padding:8px 16px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+
+  @media (max-width: 680px){
+    .grid{
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:10px;
+      padding:18px 12px 6px;
+    }
+    .card-body{padding:10px 10px 12px; gap:6px;}
+    .card-name{font-size:13.5px; line-height:1.3;}
+    .card-note{font-size:10.5px;}
+    .card-price{font-size:11.5px;}
+    .chip-row{gap:5px;}
+    .chip{padding:5px 7px; min-width:42px;}
+    .chip-size{font-size:10.5px;}
+    .chip-status{font-size:8px;}
+  }
+
+  .card{
+    background:var(--washi);
+    color:var(--ink-text);
+    border-radius:14px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 10px 24px rgba(6,7,26,0.28);
+  }
+  .card-media{
+    aspect-ratio:4/3;
+    background:linear-gradient(160deg, #e9e2cf, #ddd3b8);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    color:#9c8f6c;
+    border-bottom:1px solid var(--washi-dim);
+    overflow:hidden;
+  }
+  .card-media svg{width:38px;height:38px;opacity:0.55;}
+  .card-media span{font-size:11px;letter-spacing:0.05em;}
+  .card-media.has-img{background:#fff;}
+  .card-media.has-img img{width:100%;height:100%;object-fit:contain;padding:6px;}
+
+  .card-body{padding:16px 16px 18px; display:flex; flex-direction:column; gap:8px; flex:1;}
+  .card-name{margin:0; font-size:17px; font-weight:700; line-height:1.35;}
+  .card-note{margin:0; font-size:12.5px; color:var(--ink-soft);}
+  .card-price{margin:0 0 2px; font-size:13.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; padding-top:8px;}
+  .chip{
+    appearance:none;
+    border-radius:8px;
+    padding:7px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:1px;
+    min-width:58px;
+    cursor:default;
+    font-family:inherit;
+    border:none;
+  }
+  .chip-size{font-size:12px; font-weight:700; letter-spacing:0.03em;}
+  .chip-status{font-size:10.5px; font-weight:700; letter-spacing:0.02em;}
+  .chip-in{background:var(--matsu-soft); border:1px solid rgba(39,106,73,0.35); color:var(--matsu);}
+  .chip-out{background:var(--shu-soft); border:1px solid rgba(178,58,43,0.4); color:var(--shu); position:relative;}
+  .chip-out .chip-status{display:inline-block; transform:rotate(-6deg);}
+
+  body.staff-mode .chip{cursor:pointer; transition:transform 0.12s ease;}
+  body.staff-mode .chip:active{transform:scale(0.94);}
+  body.staff-mode .chip[disabled]{opacity:0.5; cursor:wait;}
+  @media (prefers-reduced-motion: reduce){ .chip{transition:none;} }
+
+  /* ---------- staff mode: compact one-screen table ---------- */
+  body.staff-mode .grid{
+    display:block;
+    gap:0;
+    padding:1px 10px 3px;
+    margin:10px 12px 0;
+    background:var(--washi);
+    border-radius:12px;
+    box-shadow:0 10px 24px rgba(6,7,26,0.28);
+  }
+  .srow{
+    display:grid;
+    grid-template-columns:30px minmax(84px,1fr) auto;
+    align-items:center;
+    gap:8px;
+    padding:5px 2px;
+    border-bottom:1px solid var(--washi-dim);
+  }
+  .srow:last-child{border-bottom:none;}
+  .srow-thumb{
+    width:30px; height:30px;
+    border-radius:7px;
+    background:linear-gradient(160deg,#e9e2cf,#ddd3b8);
+    display:flex; align-items:center; justify-content:center;
+    color:#9c8f6c;
+    flex:none;
+    overflow:hidden;
+  }
+  .srow-thumb svg{width:15px;height:15px;opacity:0.6;}
+  .srow-thumb img{width:100%;height:100%;object-fit:cover;}
+  .srow-info{min-width:0; color:var(--ink-text);}
+  .srow-name{font-size:11.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .srow-price{font-size:10px; color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+  .srow-chips{display:flex; flex-wrap:wrap; gap:4px; justify-content:flex-end;}
+
+  .chip-compact{padding:3px 6px; min-width:38px; border-radius:6px;}
+  .chip-compact .chip-size{font-size:10.5px;}
+  .chip-compact .chip-status{font-size:7.5px;}
+
+  .page-footer{
+    padding:26px 20px 4px;
+    color:var(--washi-dim);
+    font-size:12.5px;
+    line-height:1.7;
+    border-top:1px solid rgba(255,255,255,0.08);
+    margin-top:8px;
+  }
+  .page-footer b{color:var(--washi);}
+  body.staff-mode .page-footer{display:none;}
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:22px;
+    transform:translateX(-50%) translateY(12px);
+    background:#0c0d29;
+    color:var(--washi);
+    border:1px solid rgba(255,255,255,0.18);
+    padding:10px 12px 10px 18px;
+    border-radius:999px;
+    font-size:13px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.4);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.2s ease, transform 0.2s ease;
+    max-width:88vw;
+    z-index:40;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto;}
+  .toast-undo{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.4);
+    color:var(--focus);
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    flex:none;
+    white-space:nowrap;
+  }
+  .toast-undo:hover{background:rgba(255,255,255,0.12);}
+  .toast-undo[hidden]{display:none;}
+
+  .qr-overlay{
+    position:fixed; inset:0;
+    background:rgba(10,11,34,0.86);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:24px;
+  }
+  .qr-overlay[hidden]{display:none;}
+  .qr-card{
+    background:var(--washi);
+    color:var(--ink-text);
+    border-radius:18px;
+    padding:28px 26px 22px;
+    text-align:center;
+    max-width:340px;
+    width:100%;
+  }
+  .qr-card h2{font-family:"Zen Old Mincho",serif; font-size:22px; margin:0 0 4px;}
+  .qr-card p{font-size:12.5px; color:var(--ink-soft); margin:0 0 16px;}
+  .qr-box{display:flex; align-items:center; justify-content:center; background:#fff; border-radius:10px; padding:14px; margin:0 auto 16px; width:fit-content;}
+  .qr-close{background:var(--ink-panel); color:var(--washi); border:none; padding:10px 20px; border-radius:999px; font-size:13px; font-weight:700; cursor:pointer;}
+
+  /* Staff login dialog: a real Supabase Auth sign-in (email + password),
+     checked server-side via Row Level Security -- not a password string
+     baked into this file. Built as our own in-page overlay (not
+     window.prompt/alert/confirm) for consistent, reliable behavior across
+     browsers and embedded viewers. */
+  .pw-overlay{
+    position:fixed; inset:0;
+    background:rgba(10,11,34,0.86);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:60;
+    padding:24px;
+  }
+  .pw-overlay[hidden]{display:none;}
+  .pw-card{
+    background:var(--washi);
+    color:var(--ink-text);
+    border-radius:18px;
+    padding:28px 26px 22px;
+    text-align:center;
+    max-width:320px;
+    width:100%;
+  }
+  .pw-card h2{font-family:"Zen Old Mincho",serif; font-size:19px; margin:0 0 14px;}
+  .pw-card input{
+    width:100%;
+    font-size:15px;
+    padding:10px 12px;
+    border-radius:8px;
+    border:1px solid var(--washi-dim);
+    margin-bottom:10px;
+    font-family:inherit;
+    box-sizing:border-box;
+  }
+  .pw-error{color:var(--shu); font-size:12px; min-height:16px; margin:0 0 10px;}
+  .pw-buttons{display:flex; gap:10px; justify-content:center;}
+  .pw-cancel{background:transparent; color:var(--ink-soft); border:1px solid var(--washi-dim); padding:10px 18px; border-radius:999px; font-size:13px; font-weight:700; cursor:pointer;}
+  .pw-ok{background:var(--ink-panel); color:var(--washi); border:none; padding:10px 20px; border-radius:999px; font-size:13px; font-weight:700; cursor:pointer;}
+  .pw-ok[disabled]{opacity:0.6; cursor:wait;}
+</style>
+</head>
+<body>
+  <header class="topbar" id="topbar">
+    <div class="topbar-inner">
+      <div>
+        <p class="brand-eyebrow">STOCK STATUS</p>
+        <h1 class="brand-name" id="brand-name">SAMURAI SONIC</h1>
+        <p class="brand-sub">物販 在庫ステータス</p>
+        <div class="update-line" id="update-line"><span class="dot" aria-hidden="true"></span>最終更新 --:--</div>
+        <button type="button" class="refresh-btn" id="refresh-btn">画面を更新</button>
+      </div>
+      <button type="button" class="staff-toggle" id="staff-toggle">お客様画面に戻る</button>
+    </div>
+  </header>
+
+  <div class="staff-banner" id="staff-banner">
+    <span><strong>スタッフ編集モード</strong> ・ タップで在庫を切替、間違えたら通知の「元に戻す」から取消できます</span>
+    <div class="staff-banner-actions">
+      <button type="button" class="qr-btn" id="qr-open">掲示用QRを表示</button>
+    </div>
+  </div>
+
+  <div class="page">
+    <main class="grid" id="grid"><div class="grid-loading">読み込み中…</div></main>
+    <footer class="page-footer">
+      <p id="footer-note"><b>ご利用のお客様へ</b>：表示は現地スタッフの手動更新によるものです。実際の在庫と多少前後する場合がございます。商品はなくなり次第終了です。</p>
+    </footer>
+  </div>
+
+  <div class="qr-overlay" id="qr-overlay" hidden>
+    <div class="qr-card">
+      <h2>SAMURAI SONIC</h2>
+      <p>このQRを読み取ると在庫状況ページが開きます</p>
+      <div class="qr-box" id="qr-box"></div>
+      <button type="button" class="qr-close" id="qr-close">閉じる</button>
+    </div>
+  </div>
+
+  <div class="pw-overlay" id="pw-overlay" hidden>
+    <div class="pw-card">
+      <h2>スタッフ用ログイン</h2>
+      <input type="email" id="pw-email" autocomplete="username" placeholder="メールアドレス">
+      <input type="password" id="pw-input" autocomplete="current-password" placeholder="パスワード">
+      <p class="pw-error" id="pw-error"></p>
+      <div class="pw-buttons">
+        <button type="button" class="pw-cancel" id="pw-cancel">キャンセル</button>
+        <button type="button" class="pw-ok" id="pw-ok">ログイン</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <span class="toast-msg" id="toast-msg"></span>
+    <button type="button" class="toast-undo" id="toast-undo" hidden>元に戻す</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script>
+  (function(){
+    'use strict';
+
+    // Dedicated Supabase project for this site. The anon key below is a
+    // PUBLIC key -- it is meant to be visible in client-side code. It only
+    // grants what the database's Row Level Security policies allow: anyone
+    // may read stock_items, but only a signed-in ("authenticated") user may
+    // update them. That server-side check is what actually protects stock
+    // edits now, not a secret hidden in this file.
+    var SUPABASE_URL = 'https://gvnaurljfcfohtrqykxp.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2bmF1cmxqZmNmb2h0cnF5a3hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5NzgwMjAsImV4cCI6MjEwNzU1NDAyMH0.TJNJq0cKjDdX96d0e0HpuyUTmmt36Poe34N0mrremuk';
+    var EVENT_NAME = 'SAMURAI SONIC';
+
+    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function esc(s){
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function fmtTime(iso){
+      try{
+        var d = new Date(iso);
+        return d.toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+      }catch(e){ return iso; }
+    }
+
+    var MEDIA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l1.5 2.2L21 8l-3 2v9a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-9L3 8l4.5-1.8L9 4Z"/><path d="M9 4a3 3 0 0 0 6 0"/></svg>';
+
+    function chipHTML(pid, size, compact){
+      var out = size.status === 'out';
+      var cls = 'chip ' + (out ? 'chip-out' : 'chip-in') + (compact ? ' chip-compact' : '');
+      return '<button type="button" class="' + cls + '" data-pid="' + esc(pid) + '" data-size="' + esc(size.label) + '">' +
+        '<span class="chip-size">' + esc(size.label) + '</span>' +
+        '<span class="chip-status">' + (out ? 'SOLD OUT' : '在庫あり') + '</span>' +
+      '</button>';
+    }
+
+    function productCardHTML(p){
+      var chips = p.sizes.map(function(s){ return chipHTML(p.id, s, false); }).join('');
+      var media = p.image ?
+        '<div class="card-media has-img"><img src="' + esc(p.image) + '" alt="' + esc(p.name) + '" loading="lazy"></div>' :
+        '<div class="card-media">' + MEDIA_SVG + '<span>商品画像 準備中</span></div>';
+      return '<article class="card">' +
+        media +
+        '<div class="card-body">' +
+          '<h3 class="card-name">' + esc(p.name) + '</h3>' +
+          (p.note ? '<p class="card-note">' + esc(p.note) + '</p>' : '') +
+          (p.price ? '<p class="card-price">&yen;' + Number(p.price).toLocaleString('ja-JP') + '（税込）</p>' : '') +
+          '<div class="chip-row">' + chips + '</div>' +
+        '</div>' +
+      '</article>';
+    }
+
+    function staffRowHTML(p){
+      var chips = p.sizes.map(function(s){ return chipHTML(p.id, s, true); }).join('');
+      var thumb = p.image ? '<img src="' + esc(p.image) + '" alt="">' : MEDIA_SVG;
+      return '<div class="srow">' +
+        '<div class="srow-thumb">' + thumb + '</div>' +
+        '<div class="srow-info">' +
+          '<div class="srow-name">' + esc(p.name) + (p.note ? '（' + esc(p.note) + '）' : '') + '</div>' +
+          (p.price ? '<div class="srow-price">&yen;' + Number(p.price).toLocaleString('ja-JP') + '</div>' : '') +
+        '</div>' +
+        '<div class="srow-chips">' + chips + '</div>' +
+      '</div>';
+    }
+
+    function gridHTML(){ return state.products.map(productCardHTML).join(''); }
+    function staffTableHTML(){ return state.products.map(staffRowHTML).join(''); }
+
+    var state = { products: [], updatedAt: null, loaded: false, error: false };
+    var staffMode = false;
+    var pendingKeys = {}; // "pid|label" -> true while a toggle round-trip is in flight
+
+    function latestUpdatedAt(){
+      var max = null;
+      for (var i = 0; i < state.products.length; i++){
+        var u = state.products[i].updated_at;
+        if (u && (!max || u > max)) max = u;
+      }
+      return max;
+    }
+
+    function render(){
+      var gridEl = document.getElementById('grid');
+      if (!state.loaded && !state.error){
+        gridEl.innerHTML = '<div class="grid-loading">読み込み中…</div>';
+      } else if (state.error){
+        gridEl.innerHTML = '<div class="grid-error">在庫情報を読み込めませんでした。通信状況をご確認のうえ、もう一度お試しください。<br><button type="button" id="retry-load">再読み込み</button></div>';
+        var retryBtn = document.getElementById('retry-load');
+        if (retryBtn) retryBtn.onclick = loadInitial;
+      } else {
+        gridEl.innerHTML = staffMode ? staffTableHTML() : gridHTML();
+        bindChipEvents();
+      }
+      document.getElementById('update-line').innerHTML = '<span class="dot" aria-hidden="true"></span>最終更新 ' + (state.updatedAt ? fmtTime(state.updatedAt) : '--:--');
+      document.getElementById('brand-name').textContent = EVENT_NAME;
+      document.body.classList.toggle('staff-mode', staffMode);
+    }
+
+    function bindChipEvents(){
+      var chips = document.querySelectorAll('.chip');
+      for (var i = 0; i < chips.length; i++){
+        chips[i].onclick = (function(btn){
+          return function(){
+            if (!staffMode) return;
+            toggleSize(btn.getAttribute('data-pid'), btn.getAttribute('data-size'));
+          };
+        })(chips[i]);
+      }
+    }
+
+    function findSize(pid, sizeLabel){
+      var product = null;
+      for (var i = 0; i < state.products.length; i++){
+        if (state.products[i].id === pid){ product = state.products[i]; break; }
+      }
+      if (!product) return null;
+      var size = null;
+      for (var j = 0; j < product.sizes.length; j++){
+        if (product.sizes[j].label === sizeLabel){ size = product.sizes[j]; break; }
+      }
+      if (!size) return null;
+      return {product: product, size: size};
+    }
+
+    function toggleSize(pid, sizeLabel, opts){
+      opts = opts || {};
+      var key = pid + '|' + sizeLabel;
+      if (pendingKeys[key]) return; // a round-trip for this chip is already in flight
+      var found = findSize(pid, sizeLabel);
+      if (!found) return;
+
+      // Optimistic UI: flip locally and show the toast right away, then
+      // persist to Supabase. The actual source of truth is the database --
+      // if the save fails we revert and say so.
+      found.size.status = found.size.status === 'out' ? 'in' : 'out';
+      found.product.updated_at = new Date().toISOString();
+      render();
+      if (!opts.silent){
+        var newText = found.size.status === 'out' ? 'SOLD OUT' : '在庫あり';
+        showToast(found.product.name + ' ' + sizeLabel + ' を' + newText + 'にしました', {
+          undo: function(){ toggleSize(pid, sizeLabel, {silent:true}); }
+        });
+      }
+
+      pendingKeys[key] = true;
+      sb.rpc('toggle_size', { p_id: pid, p_label: sizeLabel }).then(function(res){
+        delete pendingKeys[key];
+        if (res.error){
+          // Revert the optimistic flip and tell the user it didn't save.
+          var f2 = findSize(pid, sizeLabel);
+          if (f2){ f2.size.status = f2.size.status === 'out' ? 'in' : 'out'; }
+          render();
+          if (res.error.code === '42501' || /permission/i.test(res.error.message || '')){
+            showToast('この端末はログインが切れています。もう一度スタッフログインしてください。');
+            staffMode = false;
+            render();
+          } else {
+            showToast('保存に失敗しました。もう一度お試しください。');
+          }
+        }
+      });
+    }
+
+    var toastTimer = null;
+    function showToast(msg, opts){
+      opts = opts || {};
+      var el = document.getElementById('toast');
+      if (!el) return;
+      var msgEl = document.getElementById('toast-msg');
+      var undoBtn = document.getElementById('toast-undo');
+      if (msgEl) msgEl.textContent = msg;
+      if (undoBtn){
+        if (opts.undo){
+          undoBtn.hidden = false;
+          undoBtn.onclick = function(){
+            el.classList.remove('show');
+            opts.undo();
+          };
+        } else {
+          undoBtn.hidden = true;
+          undoBtn.onclick = null;
+        }
+      }
+      el.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function(){ el.classList.remove('show'); }, opts.undo ? 5000 : 2600);
+    }
+
+    function openQR(){
+      var overlay = document.getElementById('qr-overlay');
+      var box = document.getElementById('qr-box');
+      box.innerHTML = '';
+      overlay.hidden = false;
+      if (typeof QRCode !== 'undefined'){
+        new QRCode(box, { text: location.href, width: 220, height: 220, colorDark:'#211f39', colorLight:'#ffffff' });
+      } else {
+        box.textContent = 'QRコードを読み込めませんでした';
+      }
+    }
+    function closeQR(){ document.getElementById('qr-overlay').hidden = true; }
+
+    var staffToggleBtn = document.getElementById('staff-toggle');
+    if (staffToggleBtn){
+      staffToggleBtn.onclick = function(){
+        sb.auth.signOut();
+        // onAuthStateChange below flips staffMode back off and re-renders.
+      };
+    }
+
+    var refreshBtn = document.getElementById('refresh-btn');
+    if (refreshBtn){
+      refreshBtn.onclick = function(){ location.reload(); };
+    }
+
+    // Secret staff entry: either press and hold the small footer disclaimer
+    // text for 3 seconds (touch/mobile), or click it 10 times in a row
+    // (mouse/PC). Customers never interact with that text, and nobody does
+    // either of these by accident, so this stays both hidden and safe from
+    // accidental activation. It opens a real sign-in form -- the actual
+    // access control is the Supabase "authenticated" check enforced by the
+    // database, not this gesture.
+    function openLoginDialog(){
+      if (staffMode) return;
+      var overlay = document.getElementById('pw-overlay');
+      var email = document.getElementById('pw-email');
+      var input = document.getElementById('pw-input');
+      var error = document.getElementById('pw-error');
+      if (!overlay || !input) return;
+      error.textContent = '';
+      email.value = '';
+      input.value = '';
+      overlay.hidden = false;
+      email.focus();
+    }
+    function closeLoginDialog(){
+      var overlay = document.getElementById('pw-overlay');
+      if (overlay) overlay.hidden = true;
+    }
+    function submitLogin(){
+      var email = document.getElementById('pw-email');
+      var input = document.getElementById('pw-input');
+      var error = document.getElementById('pw-error');
+      var okBtn = document.getElementById('pw-ok');
+      var emailVal = email ? email.value.trim() : '';
+      var passVal = input ? input.value : '';
+      if (!emailVal || !passVal){
+        if (error) error.textContent = 'メールアドレスとパスワードを入力してください';
+        return;
+      }
+      if (okBtn) okBtn.disabled = true;
+      sb.auth.signInWithPassword({ email: emailVal, password: passVal }).then(function(res){
+        if (okBtn) okBtn.disabled = false;
+        if (res.error){
+          if (error) error.textContent = 'メールアドレスまたはパスワードが違います';
+          if (input){ input.value = ''; input.focus(); }
+          return;
+        }
+        closeLoginDialog();
+        // onAuthStateChange below flips staffMode on and re-renders.
+      });
+    }
+    (function setupLoginDialog(){
+      var okBtn = document.getElementById('pw-ok');
+      var cancelBtn = document.getElementById('pw-cancel');
+      var input = document.getElementById('pw-input');
+      var email = document.getElementById('pw-email');
+      var overlay = document.getElementById('pw-overlay');
+      if (okBtn) okBtn.onclick = submitLogin;
+      if (cancelBtn) cancelBtn.onclick = closeLoginDialog;
+      [input, email].forEach(function(el){
+        if (!el) return;
+        el.addEventListener('keydown', function(e){
+          if (e.key === 'Enter') submitLogin();
+          else if (e.key === 'Escape') closeLoginDialog();
+        });
+      });
+      if (overlay){
+        overlay.addEventListener('click', function(e){
+          if (e.target === overlay) closeLoginDialog();
+        });
+      }
+    })();
+
+    (function setupLongPress(){
+      var holdTimer = null;
+      function start(e){
+        if (e.type === 'mousedown' && e.button !== 0) return;
+        holdTimer = setTimeout(function(){
+          holdTimer = null;
+          openLoginDialog();
+        }, 3000);
+      }
+      function cancel(){
+        if (holdTimer){ clearTimeout(holdTimer); holdTimer = null; }
+      }
+      var el = document.getElementById('footer-note');
+      if (el){
+        el.addEventListener('mousedown', start);
+        el.addEventListener('touchstart', start, {passive:true});
+        ['mouseup','mouseleave','touchend','touchcancel'].forEach(function(evt){
+          el.addEventListener(evt, cancel);
+        });
+      }
+    })();
+
+    (function setupClickCount(){
+      var CLICKS_NEEDED = 10;
+      var MAX_GAP_MS = 1500;
+      var count = 0;
+      var lastClick = 0;
+      function onClick(){
+        var now = Date.now();
+        count = (now - lastClick <= MAX_GAP_MS) ? count + 1 : 1;
+        lastClick = now;
+        if (count >= CLICKS_NEEDED){
+          count = 0;
+          openLoginDialog();
+        }
+      }
+      var el = document.getElementById('footer-note');
+      if (el) el.addEventListener('click', onClick);
+    })();
+
+    var qrOpenBtn = document.getElementById('qr-open');
+    if (qrOpenBtn) qrOpenBtn.onclick = openQR;
+    var qrCloseBtn = document.getElementById('qr-close');
+    if (qrCloseBtn) qrCloseBtn.onclick = closeQR;
+
+    // ---- Supabase: initial load, auth state, and realtime updates ----
+
+    function applyRow(row){
+      var idx = -1;
+      for (var i = 0; i < state.products.length; i++){
+        if (state.products[i].id === row.id){ idx = i; break; }
+      }
+      if (idx === -1) return;
+      state.products[idx].sizes = row.sizes;
+      state.products[idx].updated_at = row.updated_at;
+      state.updatedAt = latestUpdatedAt();
+    }
+
+    function loadInitial(){
+      state.loaded = false;
+      state.error = false;
+      render();
+      sb.from('stock_items').select('*').order('sort_order').then(function(res){
+        if (res.error || !res.data){
+          state.error = true;
+          render();
+          return;
+        }
+        state.products = res.data;
+        state.updatedAt = latestUpdatedAt();
+        state.loaded = true;
+        render();
+      });
+    }
+
+    sb.channel('stock_items_changes')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'stock_items' }, function(payload){
+        if (payload && payload.new) {
+          applyRow(payload.new);
+          render();
+        }
+      })
+      .subscribe();
+
+    sb.auth.onAuthStateChange(function(_event, session){
+      staffMode = !!session;
+      render();
+    });
+
+    loadInitial();
+  })();
+  </script>
+</body>
+</html>
